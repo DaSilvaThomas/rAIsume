@@ -1,27 +1,21 @@
-@prefix ra: <http://localhost/projects/M2THYP/rAIsume/> .
-@prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://example.org/vocab#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-ra: a rdf:Property ;  # Ontologie
-  dcterms:title "rAIsume vocabulary" ;
-  dcterms:creator "Thomas DA SILVA" .
+# Définition des classes
+ex:Texte_resume a rdfs:Class ;
+    rdfs:label "texte_resume" ;
+    rdfs:comment "Un texte et son résumé que l'on souhaite stocker." .
 
-# Classes
-ra:Document a rdfs:Class .
-ra:Text a rdfs:Class .
-ra:Summary a rdfs:Class .
+# Définition des propriétés
+ex:texte a rdf:Property ;
+    rdfs:label "texte" ;
+    rdfs:domain ex:Texte_resume ;
+    rdfs:range rdfs:Literal ;
+    rdfs:comment "Contenu textuel." .
 
-# Propriétés
-ra:hasText a rdf:Property ; rdfs:domain ra:Document ; rdfs:range ra:Text .
-ra:hasSummary a rdf:Property ; rdfs:domain ra:Document ; rdfs:range ra:Summary .
-ra:generatedBy a rdf:Property ; rdfs:domain ra:Summary ; rdfs:range rdfs:Literal .
-ra:summaryDate a rdf:Property ; rdfs:domain ra:Summary ; rdfs:range xsd:dateTime .
-ra:sourceFile a rdf:Property ; rdfs:domain ra:Document ; rdfs:range rdfs:Literal .
-ra:language a rdf:Property ; rdfs:domain ra:Document, ra:Text, ra:Summary ; rdfs:range rdfs:Literal .
-
-# Dublin Core minimal
-ra:dc_title a rdf:Property ; rdfs:subPropertyOf dcterms:title .
-ra:dc_creator a rdf:Property ; rdfs:subPropertyOf dcterms:creator .
-ra:dc_description a rdf:Property ; rdfs:subPropertyOf dcterms:description .
+ex:resume a rdf:Property ;
+    rdfs:label "resume" ;
+    rdfs:domain ex:Texte_resume ;
+    rdfs:range rdfs:Literal ;
+    rdfs:comment "Contenu du résumé." .
