@@ -10,8 +10,9 @@
 <body>
     <div class="container my-4">
         
-        <h2 class="mb-3">Afficher les items Omeka S</h2>
-        <button id="btnGet" class="btn btn-primary mb-3">
+        <!-- Lecture des items -->
+        <h3 class="mb-3">Afficher les items Omeka S</h3>
+        <button id="btnGet" class="btn btn-success mb-3">
             Afficher les items Omeka S
         </button>
         <table id="resultat" class="table table-bordered table-striped table-hover">
@@ -25,20 +26,43 @@
             <tbody></tbody>
         </table>
 
-        <h2 class="mb-3">Créer un item dans Omeka S</h2>
+        <!-- Envoyer un item -->
+        <hr class="mt-5">
+        <h3 class="mb-3">Créer un item dans Omeka S</h3>
         <button id="btnEnvoyer" class="btn btn-success mb-3">
             Envoyer les données à Omeka S
         </button>
-        <pre id="response" class="bg-light p-3 border rounded"></pre>
-    </div>
+        <pre id="responseItem" class="bg-light p-3 border rounded"></pre>
+
+        <!-- Envoyer un Audio -->
+        <hr class="mt-5">
+        <h3 class="mb-3">Enregistrer et envoyer un audio vers Omeka S</h3>
+        <label class="mb-2">Nom de l’enregistrement :</label>
+        <input id="nomAudio" type="text" placeholder="Ex : Ma voix" class="form-control mb-3"/>
+        <div>
+            <button id="btnRecord" class="btn btn-warning">Démarrer</button>
+            <button id="btnStop" class="btn btn-secondary" disabled>Stop</button>
+            <button id="btnSendAudio" class="btn btn-success" disabled>Envoyer</button>
+        </div>
+        <p id="audioStatus" class="mt-2"></p>
+        <audio id="audioPreview" controls class="mt-3" style="display:none;"></audio>
+        <pre id="responseAudio" class="bg-light mt-3 p-3 border rounded"></pre>
+        </div>
 
     <script>
         // Configuration API
         const baseURL = "http://localhost/omk_THyp_25-26_clone/omeka-s/api/items";
+        const mediaURL = "http://localhost/omk_THyp_25-26_clone/omeka-s/api/media";
         const key_identity = "dURgA6sfAT3VGheTS97xwZj983Cr33fv";
         const key_credential = "Z7QCZ2AM0G0wwNAwVuSGwZ4tbUYCr6gb";
+        const template_id = 14;
+        const class_id = 113;
 
+    
+        // ########################################
         // Lecture des items Omeka S
+        // ########################################
+
         document.getElementById("btnGet").addEventListener("click", () => {
             const url = `${baseURL}?key_identity=${key_identity}&key_credential=${key_credential}`;
             fetch(url)
@@ -68,10 +92,15 @@
             });
         });
         
+
+        // ########################################
+        // Ajout d’un item dans Omeka S
+        // ########################################
+
         // Données hardcodées correspondant au template Texte_resume
         const newItem = {
-            "o:resource_template": { "o:id": 14 },
-            "o:resource_class": { "o:id": 113 },
+            "o:resource_template": { "o:id": template_id },
+            "o:resource_class": { "o:id": class_id },
             
             "dcterms:title": [
                 {
@@ -93,7 +122,6 @@
             ]
         };
         
-        // Ajout d’un item dans Omeka S
         document.getElementById("btnEnvoyer").addEventListener("click", () => {
             fetch(`${baseURL}?key_identity=${key_identity}&key_credential=${key_credential}`, {
                 method: "POST",
@@ -109,13 +137,105 @@
                 return response.json();
             })
             .then(data => {
-                document.getElementById("response").textContent =
+                document.getElementById("responseItem").textContent =
                     "Item créé avec succès :\n" + JSON.stringify(data, null, 2);
             })
             .catch(err => {
-                document.getElementById("response").textContent =
+                document.getElementById("responseItem").textContent =
                     "Erreur : " + err.message;
             });
+        });
+
+
+        // ########################################
+        // Ajout d'un fichier audio dans Omeka S
+        // ########################################
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob;
+
+        const btnRecord = document.getElementById("btnRecord");
+        const btnStop = document.getElementById("btnStop");
+        const btnSendAudio = document.getElementById("btnSendAudio");
+        const audioStatus = document.getElementById("audioStatus");
+        const audioPreview = document.getElementById("audioPreview");
+        const inputNom = document.getElementById("nomAudio");
+
+        btnRecord.addEventListener("click", async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstart = () => {
+                    audioStatus.textContent = "Enregistrement en cours...";
+                    btnRecord.disabled = true;
+                    btnStop.disabled = false;
+                    btnSendAudio.disabled = true;
+                };
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    audioPreview.src = URL.createObjectURL(audioBlob);
+                    audioPreview.style.display = "block";
+                    audioStatus.textContent = "Enregistrement terminé";
+                    btnRecord.disabled = false;
+                    btnStop.disabled = true;
+                    btnSendAudio.disabled = false;
+                };
+                mediaRecorder.start();
+            } catch(err) {
+                audioStatus.textContent = "Erreur micro : " + err.message;
+            }
+        });
+
+        btnStop.addEventListener("click", () => {
+            if(mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+            }
+        });
+
+        btnSendAudio.addEventListener("click", async () => {
+            if(!audioBlob) return alert("Aucun enregistrement à envoyer !");
+            const nom = inputNom.value.trim();
+            if(!nom) return alert("Donne un nom / titre avant d'envoyer.");
+
+            btnSendAudio.disabled = true;
+            audioStatus.textContent = "Envoi en cours...";
+
+            const metadata = {
+                "o:resource_template": { "o:id": template_id },
+                "o:resource_class": { "o:id": class_id },
+                "o:is_public": true,
+                "dcterms:title": [{ "@value": nom, "type": "literal" }],
+                "ex:texte": [{ "@value": "Audio enregistré", "type": "literal" }],
+                "ex:resume": [{ "@value": "Résumé audio", "type": "literal" }]
+            };
+
+            const fd = new FormData();
+            fd.append("data", JSON.stringify(metadata));
+            fd.append("file[0]", audioBlob, nom.replace(/\s+/g,"_") + ".webm");
+
+            const url = `${baseURL}?key_identity=${encodeURIComponent(key_identity)}&key_credential=${encodeURIComponent(key_credential)}`;
+
+            try {
+                const resp = await fetch(url, { method: "POST", body: fd });
+                if(!resp.ok) {
+                    const text = await resp.text();
+                    throw new Error(text || resp.statusText);
+                }
+                const json = await resp.json();
+                audioStatus.textContent = "Audio envoyé avec succès !";
+
+                // Affiche le JSON complet dans la balise pre
+                document.getElementById("responseAudio").textContent =
+                    "Item créé avec succès :\n" + JSON.stringify(json, null, 2);
+            } catch(err) {
+                audioStatus.textContent = "Erreur envoi : " + err.message;
+                document.getElementById("responseAudio").textContent = "Erreur : " + err.message;
+            } finally {
+                btnSendAudio.disabled = false;
+            }
         });
     </script>
 
