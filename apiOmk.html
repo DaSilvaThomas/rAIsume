@@ -3,17 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>API Omeka S</title>
+
+    <!-- CSS Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+    <div class="container my-4">
+        
+        <h2 class="mb-3">Afficher les items Omeka S</h2>
+        <button id="btnGet" class="btn btn-primary mb-3">
+            Afficher les items Omeka S
+        </button>
+        <table id="resultat" class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Texte</th>
+                    <th>Résumé</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-    <button id="btnEnvoyer">Envoyer les données à Omeka S</button>
-    <pre id="resultat"></pre>
+        <h2 class="mb-3">Créer un item dans Omeka S</h2>
+        <button id="btnEnvoyer" class="btn btn-success mb-3">
+            Envoyer les données à Omeka S
+        </button>
+        <pre id="response" class="bg-light p-3 border rounded"></pre>
+    </div>
 
     <script>
         // Configuration API
         const baseURL = "http://localhost/omk_THyp_25-26_clone/omeka-s/api/items";
         const key_identity = "dURgA6sfAT3VGheTS97xwZj983Cr33fv";
         const key_credential = "Z7QCZ2AM0G0wwNAwVuSGwZ4tbUYCr6gb";
+
+        // Lecture des items Omeka S
+        document.getElementById("btnGet").addEventListener("click", () => {
+            const url = `${baseURL}?key_identity=${key_identity}&key_credential=${key_credential}`;
+            fetch(url)
+            .then(response => {
+            if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                let chaine = "";
+                data.forEach(item => {
+                    const titre = item["dcterms:title"]?.[0]?.["@value"] || "(sans titre)";
+                    const texte = item["ex:texte"]?.[0]?.["@value"] || "(sans texte)";
+                    const resume = item["ex:resume"]?.[0]?.["@value"] || "(sans résumé)";
+                    chaine += `
+                        <tr>
+                            <td>${titre}</td>
+                            <td>${texte}</td>
+                            <td>${resume}</td>
+                        </tr>
+                    `;
+                });
+                document.querySelector("#resultat tbody").innerHTML = chaine;
+            })
+            .catch(err => {
+                document.getElementById("resultat").textContent =
+                    "Erreur de lecture : " + err.message;
+            });
+        });
         
         // Données hardcodées correspondant au template Texte_resume
         const newItem = {
@@ -40,6 +93,7 @@
             ]
         };
         
+        // Ajout d’un item dans Omeka S
         document.getElementById("btnEnvoyer").addEventListener("click", () => {
             fetch(`${baseURL}?key_identity=${key_identity}&key_credential=${key_credential}`, {
                 method: "POST",
@@ -55,14 +109,17 @@
                 return response.json();
             })
             .then(data => {
-                document.getElementById("resultat").textContent =
+                document.getElementById("response").textContent =
                     "Item créé avec succès :\n" + JSON.stringify(data, null, 2);
             })
             .catch(err => {
-                document.getElementById("resultat").textContent =
+                document.getElementById("response").textContent =
                     "Erreur : " + err.message;
             });
         });
     </script>
+
+    <!-- JS Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
