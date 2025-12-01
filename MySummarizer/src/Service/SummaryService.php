@@ -11,7 +11,7 @@ class SummaryService
      * @return string
      */
     public function generateSummary(string $text): string
-    {
+    {    
         $apyToken = 'APY04yQjQCle4BiHGatNS8uMW3Oo2JEzWKxyTFWVpMdw3GmqEJa9qqO2LojQ0Oa4QYcTZH1BwGUi0A';
         $summary = '';
 
@@ -19,8 +19,7 @@ class SummaryService
 
         $payload = json_encode([
             "text" => $text,
-            // tu peux ajouter : "summary_length": "short" / "medium" / "long",
-            // "output_language": "fr"  si supporté, etc.
+            "output_language" => "fr",
         ]);
 
         $ch = curl_init($url);
