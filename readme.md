@@ -1,61 +1,81 @@
-# rAIsume : Résumé Automatique de Documents
+# rAIsume
 
-Application web de gestion documentaire avec génération automatique de résumés par IA.
+Projet de démonstration d'intégration Omeka-S avec module de résumé automatique.
 
-## Objectif du projet
+## Description
 
-Cette application permet de :
-- Uploader des documents (texte, PDF)
-- Stocker les documents avec leurs métadonnées sémantiques
-- Générer automatiquement des résumés via IA
-- Exporter les données au format RDF/Turtle
+rAIsume est un projet académique qui démontre l'utilisation d'Omeka-S avec un module personnalisé. Le projet permet de créer des items dans Omeka-S avec génération automatique de résumés via l'API ApyHub.
 
-## Technologies utilisées
+## Prérequis
 
-- **PHP** : Logique serveur, gestion des uploads et des API
-- **JavaScript** : Interface dynamique (résumés sans rechargement)
-- **Omeka-S** : Gestion de base de données sémantique RDF
-- **Ollama** : Génération de résumés en local (IA)
-- **RDF/Turtle** : Représentation standardisée des métadonnées
-
-## Structure du projet
-
-```
-/rAIsume
-│
-├── index.php          # Page principale
-├── upload.php         # Gestion des uploads
-├── resume.php         # Génération des résumés
-├── readme.md
-│
-└── js/
-    └── script.js      # Logique front-end
-```
-
-## Fonctionnement
-
-1. **Upload** : L'utilisateur ajoute un document via formulaire
-2. **Stockage** : Omeka-S enregistre le fichier + métadonnées RDF
-3. **Résumé** : Clic sur "Générer résumé" → appel à Ollama
-4. **Affichage** : Le résumé apparaît et est ajouté aux métadonnées
+- Serveur web local (WampServer, XAMPP, MAMP, ou autre)
+- PHP 7.4 ou supérieur
+- MySQL
+- Instance Omeka-S configurée
 
 ## Installation
 
-### Prérequis
-- PHP 7.4+
-- Serveur web (Apache/Nginx)
-- Omeka-S installé et configuré
-- Ollama installé localement
+### 1. Configuration d'Omeka-S
 
-## Métadonnées RDF
+L'instance Omeka-S doit être accessible à l'URL suivante : `http://localhost/omk_thyp_25-26_clone`
 
-Chaque document possède des métadonnées Dublin Core :
-- `dct:title` : Titre du document
-- `dct:creator` : Auteur
-- `dct:description` : Résumé généré
-- `dct:source` : Fichier source
+Placer votre installation Omeka-S dans le répertoire web de votre serveur (ex: `www`, `htdocs`) et la renommer `omk_thyp_25-26_clone`
 
-Export possible en format Turtle (.ttl) via Omeka-S.
+### 2. Base de données
+
+Créer une base de données MySQL et la connecter à Omeka-S via le fichier `database.ini`.
+
+### 3. Installation du module MySummarizer
+
+Copier le dossier `MySummarizer` dans le répertoire modules d'Omeka-S :
+
+```
+C:\wamp64\www\omk_thyp_25-26_clone\modules\MySummarizer\
+```
+
+Activer le module via l'interface d'administration Omeka-S (Modules > MySummarizer > Installer).
+
+### 4. Configuration de l'API Omeka-S
+
+Dans le fichier `apiOmk.html`, remplacer les clés d'API :
+
+```javascript
+const key_identity = "votre_key_identity";
+const key_credential = "votre_key_credential";
+```
+
+Ces clés sont générées dans l'interface Omeka-S (Utilisateur > Clés API).
+
+## Structure du projet
+
+### Projet principal
+
+```
+rAIsume/
+├── apiOmk.html     # Interface web pour interagir avec l'API Omeka-S
+└── README.md       # Documentation
+```
+
+### Module MySummarizer
+
+```
+MySummarizer/
+├── config/
+│   ├── module.config.php         # Configuration des routes et services
+│   └── module.ini                # Métadonnées du module
+├── src/
+│   ├── Controller/
+│   │   └── FormController.php    # Contrôleur du formulaire
+│   └── Service/
+│       └── SummaryService.php    # Service de génération de résumés
+├── view/
+│   └── my-summarizer/
+│       └── form/
+│           ├── index.phtml       # Vue du formulaire
+│           └── result.phtml      # Vue des résultats
+├── composer.json
+└── Module.php                    # Classe principale du module
+```
 
 ## Modèle de données (Diagramme Entité-Relation)
 
@@ -85,24 +105,63 @@ erDiagram
     }
 ```
 
+## Utilisation
+
+### Interface web (apiOmk.html)
+
+1. Ouvrir `apiOmk.html` dans un navigateur
+2. Trois fonctionnalités disponibles :
+   - **Afficher les items** : Récupère et affiche tous les items existants
+   - **Créer un item** : Ajoute un nouvel item avec résumé automatique (50 premiers mots)
+   - **Module MySummarizer** : Accès direct au module via iframe
+
+### Module MySummarizer
+
+Accessible à l'URL : `http://localhost/omk_thyp_25-26_clone/summarizer`
+
+Le module permet de :
+1. Saisir un titre et un texte
+2. Générer automatiquement un résumé via l'API ApyHub
+3. Créer l'item dans Omeka-S avec les métadonnées Dublin Core :
+   - `dcterms:title` : Titre de l'item
+   - `dcterms:description` : Texte complet
+   - `dcterms:abstract` : Résumé généré
+
+## Fonctionnalités techniques
+
+### API Omeka-S
+
+Le projet utilise l'API REST d'Omeka-S pour :
+- Lire les items (GET)
+- Créer des items (POST)
+
+### Génération de résumés
+
+Deux méthodes de résumé :
+- **apiOmk.html** : Extraction simple des 50 premiers mots
+- **MySummarizer** : Résumé intelligent via l'API ApyHub (IA)
+
+### Service ApyHub
+
+Le module utilise l'API ApyHub pour générer des résumés en français. 
+
+Un token d'API personnel est déjà configuré dans le fichier `SummaryService.php` :
+
+```php
+$apyToken = 'APY04yQjQCle4BiHGatNS8uMW3Oo2JEzWKxyTFWVpMdw3GmqEJa9qqO2LojQ0Oa4QYcTZH1BwGUi0A';
+```
+
+Le projet fonctionnera directement avec ce token pour faciliter les tests. Si vous souhaitez utiliser votre propre token ApyHub, vous pouvez en créer un gratuitement après avoir créé un compte sur [apyhub.com](https://apyhub.com).
+
+## Configuration SSL
+
+Pour un environnement de développement local, la vérification SSL est désactivée dans les requêtes cURL :
+
+```php
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+```
+
 ## Auteur
 
-- Thomas DA SILVA
-- Université Paris 8 Vincennes - Saint-Denis 
-- Master 2 Technologies de l’Hypermédia (THYP)
-
-## Sources
-
-Ce README a été rédigé avec l'assistance de **Claude** (Anthropic), un assistant IA qui a aidé à structurer et formaliser la documentation du projet.
-
-- **Modèle utilisé** : Claude Sonnet 4.5
-- **Date** : Octobre 2025
-- **Lien** : [Claude.ai](https://claude.ai)
-
-### Prompt initial
-
-Le projet a été défini selon le cahier des charges suivant :
-
-```
-Crée un README pour une application web de gestion documentaire avec résumé automatique par IA. Le projet utilise PHP pour la logique serveur, JavaScript pour l'interface dynamique, Omeka-S comme base de données sémantique RDF, et Ollama pour générer les résumés localement. L'utilisateur upload un document (texte ou PDF), Omeka-S le stocke avec ses métadonnées RDF (titre, créateur, description selon Dublin Core), un bouton permet de générer un résumé via Ollama, et ce résumé est affiché puis ajouté comme métadonnée dans Omeka-S. L'architecture comprend index.php (page principale), upload.php (gestion des uploads vers Omeka-S API), resume.php (appel à Ollama via shell_exec), main.js (gestion du bouton résumer en fetch), et un dossier uploads. Les métadonnées sont exportables en format Turtle. Inclus dans le README : objectif, technologies utilisées, structure des fichiers, fonctionnement en étapes, et infos d'installation basiques.
-```
+Thomas DA SILVA - Projet de cours Master THYP 2025-2026
