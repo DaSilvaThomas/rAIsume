@@ -9,50 +9,76 @@
 </head>
 <body>
     <div class="container my-4">
-        
+
+        <!-- ========================= -->
         <!-- Lecture des items -->
-        <h3 class="mb-3">Afficher les items Omeka S</h3>
+        <!-- ========================= -->
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h3 class="card-title mb-3">Afficher les items Omeka S</h3>
 
-        <button id="btnGet" class="btn btn-success mb-3">
-            Afficher les items Omeka S
-        </button>
+                <button id="btnGet" class="btn btn-success mb-3">
+                    Afficher les items Omeka S
+                </button>
 
-        <table id="resultat" class="table table-bordered table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Titre</th>
-                    <th>Texte</th>
-                    <th>Résumé</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <!-- Envoyer un item -->
-        <hr class="mt-5">
-        <h3 class="mb-3">Créer un item dans Omeka S</h3>
-
-        <div class="mb-3">
-            <label for="titre">Titre</label>
-            <input type="text" id="titre" class="form-control">
+                <table id="resultat" class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Texte</th>
+                            <th>Résumé</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label for="texte">Texte</label>
-            <textarea id="texte" class="form-control"></textarea>
+        <!-- ========================= -->
+        <!-- Création d’item texte -->
+        <!-- ========================= -->
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h3 class="card-title mb-3">Créer un item dans Omeka S</h3>
+
+                <div class="mb-3">
+                    <label for="titre">Titre</label>
+                    <input type="text" id="titre" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="texte">Texte</label>
+                    <textarea id="texte" class="form-control"></textarea>
+                </div>
+
+                <button id="btnEnvoyer" class="btn btn-success mb-3">
+                    Envoyer les données à Omeka S
+                </button>
+
+                <h5>Résultat</h5>
+                <pre id="responseItem" class="bg-light p-3 border rounded"></pre>
+            </div>
         </div>
 
-        <button id="btnEnvoyer" class="btn btn-success mb-3">
-            Envoyer les données à Omeka S
-        </button>
+        <!-- ========================= -->
+        <!-- Module MySummarizer -->
+        <!-- ========================= -->
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h3 class="card-title mb-3">Module Omeka S : MySummarizer</h3>
 
-        <pre id="responseItem" class="bg-light p-3 border rounded"></pre>
+                <iframe
+                src="http://localhost/omk_thyp_25-26_clone/summarizer"
+                style="height: 800px;"
+                class="w-100 rounded mb-3"
+                title="MySummarizer">
+                </iframe>
 
-        <!-- Mon module Omeka S -->
-        <hr class="mt-5">
-        <h3 class="mb-3">Module Omeka S : MySummarizer</h3>
-        <iframe src="http://localhost/omk_thyp_25-26_clone/summarizer" style="height: 800px;" title="Exemple Bootstrap" class="w-100 rounded shadow mb-3"></iframe>
-        <a href="http://localhost/omk_thyp_25-26_clone/summarizer" class="link-primary">Lien vers mon module : MySummarizer</a>
+                <a href="http://localhost/omk_thyp_25-26_clone/summarizer" class="link-primary">
+                    Lien vers mon module : MySummarizer
+                </a>
+            </div>
+        </div>
     </div>
 
     <script>
